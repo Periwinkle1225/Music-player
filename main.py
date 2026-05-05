@@ -10,8 +10,8 @@ folder = "music"
 is_paused = False
 index = 0
 song_list = []
+
 def load_songs():
-    current = 0
     global song_list
 
     if not os.path.isdir(folder):
@@ -32,6 +32,7 @@ def play_music(songs):
     if not os.path.exists(file_path):
         print("File not found")
         return
+    current_song_print.config(text=songs[index])
 
     pygame.mixer.music.load(file_path)   
     pygame.mixer.music.play()
@@ -44,23 +45,24 @@ def pause_music():
     if is_paused == False:
         pygame.mixer.music.pause()
         is_paused = True
-        print("Paused")
+        pause_btn.config(image=play_btn_image)
 
+        print("Paused")
     elif is_paused == True:
         pygame.mixer.music.unpause()
         is_paused = False
         print("Unpaused")
+        pause_btn.config(image=pause_btn_image)
+
 
 
 def next_music(songs):
     limit = len(songs)
-    
-    pygame.mixer.music.stop()
     global index
     index = index + 1
-    if index > limit:
+
+    if index >= limit:
         index = limit - 1 
-    current_song_print.config(text=songs[index])
 
     song = songs[index]
     file_path = os.path.join(folder, song)
@@ -75,13 +77,15 @@ def next_music(songs):
 
 def prev_music(songs):
     limit = len(songs)
-    pygame.mixer.music.stop()
     global index
 
     index = index - 1
-    current_song_print.config(text=songs[index])
+    
     if index < 0:
         index = 0
+
+    current_song_print.config(text=songs[index])
+
     song = songs[index]    
     file_path = os.path.join(folder, song)
 
@@ -91,13 +95,12 @@ def prev_music(songs):
     pygame.mixer.music.load(file_path)
     pygame.mixer.music.play()
 
-def song_click(i):
-    global song_list
+def song_click(songs, i):
     global index
     index = i
-    current_song_print.config(text=song_list[index])
+    current_song_print.config(text=songs[index])
 
-    song = song_list[index]    
+    song = songs[index]    
     file_path = os.path.join(folder, song)
 
     pygame.mixer.music.load(file_path)   
@@ -108,6 +111,9 @@ def song_click(i):
 
 def load_window():
     global current_song_print
+    global pause_btn
+    global play_btn_image
+    global pause_btn_image
     songs = load_songs()
     root = Tk()
     root.title("Music Player")
@@ -125,7 +131,7 @@ def load_window():
     current_song_print = Label(songs_frame,text=songs[index],bg="White", fg="black")
     current_song_print.pack(padx=5, pady=5)
     for i, song in enumerate(songs):
-        song_print = Button(songs_frame,text=song,bg="blue", fg="blue",command=lambda i=i:song_click(i)) #When this function is created, take the current value of i and store it as a default value inside the function.
+        song_print = Button(songs_frame,text=song,bg="blue", fg="blue",command=lambda i=i:song_click(songs, i)) #When this function is created, take the current value of i and store it as a default value inside the function.
         song_print.pack(padx=0, pady=0,)
 
     bottomlist = Listbox(root, bg="black", fg="grey", width=100, height=15)
@@ -140,12 +146,13 @@ def load_window():
     control_frame = Frame(root)
     control_frame.pack()
 
-    play_btn = Button(control_frame, image=play_btn_image, borderwidth=0,command=play_music(songs))
+    play_music(songs)
+    #play_btn = Button(control_frame, image=play_btn_image, borderwidth=0,command=play_music(songs))
     pause_btn = Button(control_frame, image=pause_btn_image, borderwidth=0,command=pause_music)
     next_btn = Button(control_frame, image=next_btn_image, borderwidth=0,command=lambda: next_music(songs))
     prev_btn = Button(control_frame, image=prev_btn_image, borderwidth=0,command=lambda: prev_music(songs))
 
-    play_btn.grid(row=0, column=1, padx=7, pady=10)
+    #play_btn.grid(row=0, column=1, padx=7, pady=10)
     pause_btn.grid(row=0, column=2, padx=7, pady=10)
     next_btn.grid(row=0, column=3, padx=7, pady=10)
     prev_btn.grid(row=0, column=0, padx=7, pady=10)
